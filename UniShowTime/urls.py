@@ -20,19 +20,19 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 
-@csrf_exempt
-@require_http_methods(["GET", "HEAD"])
 def health_check(request):
-    """Simple health check endpoint for Railway"""
-    return HttpResponse("OK", content_type="text/plain", status=200)
+    """Bulletproof health check for Railway"""
+    try:
+        # Simple response without any dependencies
+        return HttpResponse("OK", content_type="text/plain", status=200)
+    except Exception as e:
+        return HttpResponse(f"ERROR: {str(e)}", content_type="text/plain", status=500)
 
 urlpatterns = [
     path('django-admin/', admin.site.urls),
     path('', include('mainapp.urls')),
-    path('health/', health_check, name='health_check'),  # Add health check endpoint
+    path('health/', health_check, name='health_check'),  # Simplified health check
     
     # Password Reset URLs
     path('password-reset/', auth_views.PasswordResetView.as_view(

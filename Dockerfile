@@ -54,5 +54,5 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Use a startup script that handles migrations and static files at runtime
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput --clear && gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --log-level info UniShowTime.wsgi:application"]
+# Use a startup script that handles everything step by step
+CMD ["sh", "-c", "echo 'Starting Railway deployment...' && python manage.py check && echo 'Django check passed' && python manage.py migrate --noinput && echo 'Migrations completed' && python manage.py collectstatic --noinput --clear && echo 'Static files collected' && echo 'Starting Gunicorn...' && gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120 --log-level info --access-logfile - --error-logfile - UniShowTime.wsgi:application"]

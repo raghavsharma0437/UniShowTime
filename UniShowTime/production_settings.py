@@ -6,6 +6,12 @@ from pathlib import Path
 # Ensure BASE_DIR is properly set
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Debug prints to see what's happening
+print("🔧 Production settings loading...")
+print(f"📂 BASE_DIR: {BASE_DIR}")
+print(f"🔑 SECRET_KEY set: {'Yes' if os.environ.get('SECRET_KEY') else 'No'}")
+print(f"🗄️ DATABASE_URL set: {'Yes' if os.environ.get('DATABASE_URL') else 'No'}")
+
 # Override settings for production
 DEBUG = False
 
@@ -17,10 +23,24 @@ ALLOWED_HOSTS = ['*']
 
 # Database configuration using Railway's DATABASE_URL
 DATABASE_URL = os.environ.get('DATABASE_URL')
+print(f"🗄️ Database URL: {DATABASE_URL[:50] if DATABASE_URL else 'Not set'}...")
+
 if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL)
-    }
+    try:
+        DATABASES = {
+            'default': dj_database_url.parse(DATABASE_URL)
+        }
+        print("✅ Database configuration successful")
+    except Exception as e:
+        print(f"❌ Database configuration failed: {e}")
+        # Fallback to SQLite
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+        print("🔄 Using SQLite fallback")
 else:
     # Fallback to SQLite for development
     DATABASES = {
@@ -29,6 +49,7 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+    print("⚠️ No DATABASE_URL found, using SQLite")
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
