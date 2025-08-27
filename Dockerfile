@@ -37,11 +37,11 @@ RUN pip install --no-cache-dir \
 # Copy project
 COPY . .
 
+# Make start script executable
+RUN chmod +x start.sh
+
 # Create staticfiles directory
 RUN mkdir -p /app/staticfiles
-
-# Collect static files
-RUN python manage.py collectstatic --noinput --clear || echo "Collectstatic failed, continuing..."
 
 # Create a non-root user
 RUN adduser --disabled-password --gecos '' appuser && \
@@ -52,4 +52,4 @@ USER appuser
 EXPOSE 8000
 
 # Command to run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "UniShowTime.wsgi:application"]
+CMD ["./start.sh"]

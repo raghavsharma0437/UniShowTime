@@ -12,13 +12,20 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '.railway.app',
-    config('RAILWAY_STATIC_URL', default=''),
-    config('RAILWAY_PUBLIC_DOMAIN', default=''),
+    '*',  # Allow all hosts for Railway
 ]
 
-# Remove localhost and 127.0.0.1 from ALLOWED_HOSTS for production
-if not DEBUG:
-    ALLOWED_HOSTS = [host for host in ALLOWED_HOSTS if host not in ['localhost', '127.0.0.1', '']]
+# Add Railway specific hosts
+railway_static_url = config('RAILWAY_STATIC_URL', default='')
+railway_public_domain = config('RAILWAY_PUBLIC_DOMAIN', default='')
+
+if railway_static_url:
+    ALLOWED_HOSTS.append(railway_static_url)
+if railway_public_domain:
+    ALLOWED_HOSTS.append(railway_public_domain)
+
+# Remove empty strings and ensure we have wildcard for Railway
+ALLOWED_HOSTS = [host for host in ALLOWED_HOSTS if host]
 
 # Database
 DATABASES = {

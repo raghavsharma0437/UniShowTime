@@ -17,13 +17,16 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Detect if we're on Railway or in production
-if 'RAILWAY_ENVIRONMENT' in os.environ or os.environ.get('DJANGO_SETTINGS_MODULE') == 'UniShowTime.production_settings':
+if 'RAILWAY_ENVIRONMENT' in os.environ:
+    print("🚀 Running in Railway environment - using production settings")
     # Import production settings
     try:
         from .production_settings import *
-    except ImportError:
+    except ImportError as e:
+        print(f"⚠️ Failed to import production settings: {e}")
         pass
 else:
+    print("💻 Running in development environment")
     # Development settings continue below
     pass
 
