@@ -12,6 +12,17 @@ print(f"📂 BASE_DIR: {BASE_DIR}")
 print(f"🔑 SECRET_KEY set: {'Yes' if os.environ.get('SECRET_KEY') else 'No'}")
 print(f"🗄️ DATABASE_URL set: {'Yes' if os.environ.get('DATABASE_URL') else 'No'}")
 
+# Debug: List all environment variables that might contain database info
+print("🔍 Available database-related environment variables:")
+for key, value in os.environ.items():
+    if any(keyword in key.upper() for keyword in ['DATABASE', 'POSTGRES', 'DB', 'PG']):
+        print(f"   {key}: {value[:50] if len(value) > 50 else value}...")
+        
+print("🔍 Available Railway-related environment variables:")
+for key, value in os.environ.items():
+    if 'RAILWAY' in key.upper():
+        print(f"   {key}: {value[:50] if len(value) > 50 else value}...")
+
 # Override settings for production
 DEBUG = False
 
@@ -70,8 +81,18 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-# WhiteNoise configuration - use simpler storage for Railway
-MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+# WhiteNoise configuration - define complete MIDDLEWARE list for production
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add WhiteNoise early
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
 STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'  # Simpler storage
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
