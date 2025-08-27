@@ -20,9 +20,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
+@csrf_exempt
+@require_http_methods(["GET", "HEAD"])
 def health_check(request):
-    return HttpResponse("OK", content_type="text/plain")
+    """Simple health check endpoint for Railway"""
+    return HttpResponse("OK", content_type="text/plain", status=200)
 
 urlpatterns = [
     path('django-admin/', admin.site.urls),

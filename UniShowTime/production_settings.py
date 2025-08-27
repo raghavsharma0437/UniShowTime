@@ -1,6 +1,10 @@
 from .settings import *
 import os
 import dj_database_url
+from pathlib import Path
+
+# Ensure BASE_DIR is properly set
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Override settings for production
 DEBUG = False
@@ -28,11 +32,11 @@ else:
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = '/app/staticfiles'  # Use absolute path for Railway
 
 # Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = '/app/media'  # Use absolute path for Railway
 
 # Security settings for production
 if not DEBUG:
@@ -45,9 +49,11 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-# WhiteNoise configuration
+# WhiteNoise configuration - use simpler storage for Railway
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'  # Simpler storage
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
 
 # Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

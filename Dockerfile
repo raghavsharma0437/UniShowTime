@@ -37,19 +37,16 @@ RUN pip install --no-cache-dir \
 # Copy project
 COPY . .
 
-# Make start script executable
-RUN chmod +x start.sh
-
-# Create staticfiles directory
-RUN mkdir -p /app/staticfiles
+# Create staticfiles and media directories with proper permissions
+RUN mkdir -p /app/staticfiles /app/media && \
+    chmod -R 755 /app/staticfiles /app/media
 
 # Create a non-root user
 RUN adduser --disabled-password --gecos '' appuser && \
     chown -R appuser:appuser /app
 
-# Don't switch to appuser yet - run setup as root first
-# Collect static files as root
-RUN python manage.py collectstatic --noinput --clear || echo "Static files collection failed, continuing..."
+# Don't collect static files in build - do it at runtime
+# This prevents the STATIC_ROOT error during build
 
 # Now switch to appuser
 USER appuser
@@ -57,5 +54,5 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Use a simpler command that doesn't rely on shell script
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "--log-level", "info", "UniShowTime.wsgi:application"]
+# Use a startup script that handles migrations and static files at runtime
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput --clear && gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --log-level info UniShowTime.wsgi:application"]
