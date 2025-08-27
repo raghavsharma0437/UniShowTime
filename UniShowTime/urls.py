@@ -19,10 +19,15 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
+from django.http import HttpResponse
+
+def health_check(request):
+    return HttpResponse("OK", content_type="text/plain")
 
 urlpatterns = [
     path('django-admin/', admin.site.urls),
     path('', include('mainapp.urls')),
+    path('health/', health_check, name='health_check'),  # Add health check endpoint
     
     # Password Reset URLs
     path('password-reset/', auth_views.PasswordResetView.as_view(

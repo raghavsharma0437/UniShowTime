@@ -46,10 +46,16 @@ RUN mkdir -p /app/staticfiles
 # Create a non-root user
 RUN adduser --disabled-password --gecos '' appuser && \
     chown -R appuser:appuser /app
+
+# Don't switch to appuser yet - run setup as root first
+# Collect static files as root
+RUN python manage.py collectstatic --noinput --clear || echo "Static files collection failed, continuing..."
+
+# Now switch to appuser
 USER appuser
 
 # Expose port
 EXPOSE 8000
 
-# Command to run the application
-CMD ["./start.sh"]
+# Use a simpler command that doesn't rely on shell script
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "--log-level", "info", "UniShowTime.wsgi:application"]
