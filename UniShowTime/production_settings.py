@@ -29,8 +29,29 @@ DEBUG = False
 # Simple secret key handling
 SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-secret-key-change-in-production')
 
-# Allow all hosts for Railway
-ALLOWED_HOSTS = ['*']
+# Allow all hosts for Railway - including health check domains
+ALLOWED_HOSTS = [
+    '*',  # Allow all hosts
+    'localhost',
+    '127.0.0.1',
+    '.railway.app',
+    'healthcheck.railway.app',  # Specific health check domain
+    '.up.railway.app',  # Railway app domains
+]
+
+# Add Railway-specific hosts from environment
+railway_static_url = os.environ.get('RAILWAY_STATIC_URL', '')
+railway_public_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
+
+if railway_static_url:
+    ALLOWED_HOSTS.append(railway_static_url)
+    print(f"📡 Added RAILWAY_STATIC_URL to ALLOWED_HOSTS: {railway_static_url}")
+
+if railway_public_domain:
+    ALLOWED_HOSTS.append(railway_public_domain)
+    print(f"📡 Added RAILWAY_PUBLIC_DOMAIN to ALLOWED_HOSTS: {railway_public_domain}")
+
+print(f"🌐 ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 
 # Database configuration using Railway's DATABASE_URL
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -70,16 +91,18 @@ STATIC_ROOT = '/app/staticfiles'  # Use absolute path for Railway
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/app/media'  # Use absolute path for Railway
 
-# Security settings for production
+# Security settings for production - but allow health checks
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_SECONDS = 86400
-    SECURE_REDIRECT_EXEMPT = []
-    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False  # Disable for Railway health checks
+    SECURE_HSTS_SECONDS = 0  # Disable HSTS for Railway health checks
+    SECURE_REDIRECT_EXEMPT = ['/health/']  # Exempt health check from redirects
+    SECURE_SSL_REDIRECT = False  # Disable SSL redirect for Railway health checks
+    SESSION_COOKIE_SECURE = False  # Allow non-HTTPS for health checks
+    CSRF_COOKIE_SECURE = False  # Allow non-HTTPS for health checks
+    
+    print("🔒 Security settings configured for Railway health checks")
 
 # WhiteNoise configuration - define complete MIDDLEWARE list for production
 MIDDLEWARE = [
